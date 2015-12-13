@@ -3,5 +3,8 @@ name = "pacman"
 version = "0.1.0"
 authors = ["Logan Moore <lmooore@gmail.com>"]
 
+[dependencies]
+
+
 [dependencies.ncurses]
 git = "https://github.com/jeaye/ncurses-rs.git"
