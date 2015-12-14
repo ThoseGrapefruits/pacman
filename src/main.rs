@@ -11,15 +11,14 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-#![feature(convert)]
-
 extern crate ncurses;
 
 use ncurses::*;
 use std::fmt;
+use std::env;
 
-static WINDOW_WIDTH: i32 = 32;
-static WINDOW_HEIGHT: i32 = 20;
+static DESIRED_WINDOW_WIDTH: i32 = 32;
+static DESIRED_WINDOW_HEIGHT: i32 = 20;
 const ESC: i32 = 0x1B;
 const CTRL_C: i32= 0x3;
 
@@ -33,15 +32,23 @@ fn main() {
     start_color();
     curs_set(CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
+    let verbose: bool = env::args().any(|arg| {
+        arg == "--verbose"
+    });
+
     let (max_y, max_x) = get_max_bounds(stdscr);
 
     let window = create_window(0, 0);
 
     let mut ch = getch();
 
+    if verbose {
+        printw("verbose");
+    }
+
     // Main user input loop
     loop {
-        mvprintw(LINES - 1, 0, format!("{}, {}", ch, keyname(ch)).as_str());
+        mvprintw(LINES - 1, 0, &format!("{}, {}", ch, keyname(ch)));
         match ch {
             // Player movement
             KEY_LEFT => {
@@ -95,7 +102,7 @@ fn main() {
 
 /// Open a new, boxed ncurses window
 fn create_window(y: i32, x: i32) -> WINDOW {
-    let window = newwin(WINDOW_WIDTH, WINDOW_HEIGHT, y, x);
+    let window = newwin(DESIRED_WINDOW_WIDTH, DESIRED_WINDOW_HEIGHT, y, x);
     box_(window, 0, 0);
     wrefresh(window);
     window
