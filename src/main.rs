@@ -38,9 +38,9 @@ fn main() {
     });
 
     // Load `Player` and 4 `Ghost`s as `Character`s
-    let characters = vec!(&Player() as &Character:,
-                          &Ghost(), &Ghost(),
-                          &Ghost(), &Ghost());
+    let characters = vec!(&Player::new() as &Character,
+                          &Ghost::new(), &Ghost::new(),
+                          &Ghost::new(), &Ghost::new());
 
     let window = create_centred_window();
 
