@@ -10,15 +10,16 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
+mod character;
 
 extern crate ncurses;
 
 use ncurses::*;
-use std::fmt;
-use std::env;
+use std::{env, cmp};
+use character::{Character, Player, Ghost};
 
-static DESIRED_WINDOW_WIDTH: i32 = 32;
-static DESIRED_WINDOW_HEIGHT: i32 = 20;
+static DESIRED_LINES: i32 = 20;
+static DESIRED_COLS: i32 = 32;
 const ESC: i32 = 0x1B;
 const CTRL_C: i32= 0x3;
 
@@ -36,15 +37,14 @@ fn main() {
         arg == "--verbose"
     });
 
-    let (max_y, max_x) = get_max_bounds(stdscr);
+    // Load `Player` and 4 `Ghost`s as `Character`s
+    let characters = vec!(&Player() as &Character:,
+                          &Ghost(), &Ghost(),
+                          &Ghost(), &Ghost());
 
-    let window = create_window(0, 0);
+    let window = create_centred_window();
 
     let mut ch = getch();
-
-    if verbose {
-        printw("verbose");
-    }
 
     // Main user input loop
     loop {
@@ -67,32 +67,24 @@ fn main() {
                 // TODO
             },
 
-            ERR => {
-                printw("ERR");
-            },
-
             ESC => {
-                printw("Found escape");
-                break
+                mvprintw(0, 0, "Found escape");
             },
 
             KEY_F4 => {
-                printw("F4 Pressed");
-                break
+                mvprintw(0, 0, "F4 Pressed");
             },
-
-            KEY_CLOSE => {
-                break
-            }
 
             CTRL_C => {
                 break
-            }
+            },
 
             _ => {
             },
         }
+        refresh();
         ch = getch();
+        clear();
     }
 
     // Stop `ncurses`
@@ -101,11 +93,22 @@ fn main() {
 }
 
 /// Open a new, boxed ncurses window
-fn create_window(y: i32, x: i32) -> WINDOW {
-    let window = newwin(DESIRED_WINDOW_WIDTH, DESIRED_WINDOW_HEIGHT, y, x);
+fn create_window(y: i32, x: i32,
+                 lines: i32, cols: i32) -> WINDOW {
+    let window = newwin(lines, cols, y, x);
     box_(window, 0, 0);
     wrefresh(window);
+
     window
+}
+
+fn create_centred_window() -> WINDOW {
+    let (max_lines, max_cols) = get_max_bounds(stdscr);
+    let lines: i32 = cmp::min(DESIRED_LINES, max_lines);
+    let cols: i32 = cmp::min(DESIRED_COLS, max_cols);
+
+    create_window((max_lines - lines) / 2, (max_cols - cols) / 2,
+                  lines, cols)
 }
 
 /// Destroy an ncurses window
@@ -120,5 +123,7 @@ fn destroy_window(window: WINDOW) {
 fn get_max_bounds(window: WINDOW) -> (i32, i32) {
     let (mut max_y, mut max_x) = (0, 0);
     getmaxyx(window, &mut max_y, &mut max_x);
+
     (max_y, max_x)
 }
+
