@@ -69,7 +69,7 @@ trait Visible : Location {
 
 /// enum containing all moving characters (ghosts & player(s))
 
-trait Character {
+trait Character : Visible {
 
     fn new() -> Character;
 
@@ -95,7 +95,7 @@ trait Character {
     }
 }
 
-struct Ghost {
+pub struct Ghost {
     x: i32,
     y: i32,
 }
@@ -115,6 +115,34 @@ impl Character for Ghost {
     }
 
     // TODO rest of `Character` `fn`s
+    /// Shift `self` by the given `dx` and `dy`
+    fn shift(&self, dx: i32, dy: i32);
+
+    /// Shift `self` to (x, y)
+    fn shift_to(&self, x: i32, y: i32);
+
+    /// Shift `self` to the given `Point`
+    fn shift_to_point(&self, point: Point) {
+        self.shift_to(point.x(), point.y());
+    }
+
+    /// Get the next location to move to
+    fn next(&self) -> Point;
+
+    /// Go to the next location
+    fn go_next(&self) {
+        self.shift_to_point(self.next());
+    }
+}
+
+impl Location for Ghost {
+    fn x(&self) -> i32 {
+        self.x
+    }
+
+    fn y(&self) -> i32 {
+        self.y
+    }
 }
 
 impl Visible for Ghost {
@@ -123,7 +151,7 @@ impl Visible for Ghost {
     }
 }
 
-struct Player {
+pub struct Player {
     x: i32,
     y: i32,
 }
@@ -141,7 +169,36 @@ impl Character for Player {
             y: y,
         }
     }
+
     // TODO rest of `Character` `fn`s
+    /// Shift `self` by the given `dx` and `dy`
+    fn shift(&self, dx: i32, dy: i32);
+
+    /// Shift `self` to (x, y)
+    fn shift_to(&self, x: i32, y: i32);
+
+    /// Shift `self` to the given `Point`
+    fn shift_to_point(&self, point: Point) {
+        self.shift_to(point.x(), point.y());
+    }
+
+    /// Get the next location to move to
+    fn next(&self) -> Point;
+
+    /// Go to the next location
+    fn go_next(&self) {
+        self.shift_to_point(self.next());
+    }
+}
+
+impl Location for Player {
+    fn x(&self) -> i32 {
+        self.x
+    }
+
+    fn y(&self) -> i32 {
+        self.y
+    }
 }
 
 impl Visible for Player {
