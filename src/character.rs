@@ -14,6 +14,7 @@
 extern crate ncurses;
 
 use ncurses::WINDOW;
+use std::cmp::{Eq, PartialEq};
 
 /// Trait specifying a struct which exists in 2D space
 trait Location {
@@ -26,7 +27,7 @@ trait Location {
 }
 
 struct Point {
-    
+
     /// X-coordinate
     x: i32,
 
@@ -35,7 +36,7 @@ struct Point {
 }
 
 impl Point {
-    fn new(x: i32, y: i32) {
+    pub fn new(x: i32, y: i32) -> Point {
         Point {
             x: x,
             y: y,
@@ -48,7 +49,22 @@ impl Point {
             y: self.y + dy,
         }
     }
+
+    fn shift_to(&self, x: i32, y: i32) -> Point {
+        Point {
+            x: x,
+            y: y,
+        }
+    }
 }
+
+impl PartialEq for Location {
+    fn eq(&self, other: &Location) -> bool {
+        self.x() == other.x() && self.y() == other.y()
+    }
+}
+
+impl Eq for Location {}
 
 impl Location for Point {
     fn x(&self) -> i32 {
@@ -61,7 +77,7 @@ impl Location for Point {
 }
 
 /// Trait to be implemented for all structs to be rendered in `ncurses`
-trait Visible : Location {
+pub trait Visible : Location {
 
     /// Draw `self` on the given `window`
     fn draw(&self, window: WINDOW);
@@ -69,20 +85,16 @@ trait Visible : Location {
 
 /// enum containing all moving characters (ghosts & player(s))
 
-trait Character : Visible {
-
-    fn new() -> Character;
-
-    fn new_at_coords(x: i32, y: i32) -> Character;
+pub trait Character : Visible {
 
     /// Shift `self` by the given `dx` and `dy`
-    fn shift(&self, dx: i32, dy: i32);
+    fn shift(&mut self, dx: i32, dy: i32);
 
     /// Shift `self` to (x, y)
-    fn shift_to(&self, x: i32, y: i32);
+    fn shift_to(&mut self, x: i32, y: i32);
 
     /// Shift `self` to the given `Point`
-    fn shift_to_point(&self, point: Point) {
+    fn shift_to_point(&mut self, point: Point) {
         self.shift_to(point.x(), point.y());
     }
 
@@ -90,58 +102,58 @@ trait Character : Visible {
     fn next(&self) -> Point;
 
     /// Go to the next location
-    fn go_next(&self) {
-        self.shift_to_point(self.next());
+    fn go_next(&mut self) {
+        let next: Point = self.next();
+        self.shift_to_point(next);
     }
 }
 
 pub struct Ghost {
-    x: i32,
-    y: i32,
+    coords: Point,
 }
 
-impl Character for Ghost {
+impl Ghost {
     /// Create a new `Ghost` at (0, 0)
-    fn new() -> Ghost {
+    pub fn new() -> Ghost {
         Ghost::new_at_coords(0, 0)
     }
 
     /// Create a new `Ghost` at (x, y)
-    fn new_at_coords(x: i32, y: i32) -> Ghost {
+    pub fn new_at_coords(x: i32, y: i32) -> Ghost {
         Ghost {
-            x: x,
-            y: y,
+            coords: Point::new(x, y),
         }
     }
+}
+
+impl Character for Ghost {
 
     // TODO rest of `Character` `fn`s
     /// Shift `self` by the given `dx` and `dy`
-    fn shift(&self, dx: i32, dy: i32);
+    fn shift(&mut self, dx: i32, dy: i32) {
+        self.coords = self.coords.shift(dx, dy);
+    }
 
     /// Shift `self` to (x, y)
-    fn shift_to(&self, x: i32, y: i32);
-
-    /// Shift `self` to the given `Point`
-    fn shift_to_point(&self, point: Point) {
-        self.shift_to(point.x(), point.y());
+    fn shift_to(&mut self, x: i32, y: i32) {
+        self.coords = self.coords.shift_to(x, y);
     }
 
     /// Get the next location to move to
-    fn next(&self) -> Point;
-
-    /// Go to the next location
-    fn go_next(&self) {
-        self.shift_to_point(self.next());
+    fn next(&self) -> Point {
+        // TODO
+        Point::new(self.coords.x(), self.coords.y())
     }
+
 }
 
 impl Location for Ghost {
     fn x(&self) -> i32 {
-        self.x
+        self.coords.x()
     }
 
     fn y(&self) -> i32 {
-        self.y
+        self.coords.y()
     }
 }
 
@@ -156,10 +168,10 @@ pub struct Player {
     y: i32,
 }
 
-impl Character for Player {
+impl Player {
     /// Create a new player character at (0, 0)
-    fn new() -> Player {
-        Player::new_at_coords(0, 0);
+    pub fn new() -> Player {
+        Player::new_at_coords(0, 0)
     }
 
     /// Create a new player character at (x, y)
@@ -169,26 +181,48 @@ impl Character for Player {
             y: y,
         }
     }
+}
+
+#[test]
+pub fn test_player() {
+    let mut player = Player::new_at_coords(10, 10);
+    assert_eq!(player.x(), 10);
+    assert_eq!(player.y(), 10);
+
+    player.shift(10, 10);
+    assert_eq!(player.x(), 20);
+    assert_eq!(player.y(), 20);
+
+    player.shift_to(27, 34);
+    assert_eq!(player.x(), 27);
+    assert_eq!(player.y(), 34);
+
+    player.shift_to_point(Point {x: 9, y: 11});
+    assert_eq!(player.x(), 9);
+    assert_eq!(player.y(), 11);
+}
+
+impl Character for Player {
 
     // TODO rest of `Character` `fn`s
     /// Shift `self` by the given `dx` and `dy`
-    fn shift(&self, dx: i32, dy: i32);
+    fn shift(&mut self, dx: i32, dy: i32) {
+        self.x += dx;
+        self.y += dy;
+    }
 
     /// Shift `self` to (x, y)
-    fn shift_to(&self, x: i32, y: i32);
-
-    /// Shift `self` to the given `Point`
-    fn shift_to_point(&self, point: Point) {
-        self.shift_to(point.x(), point.y());
+    fn shift_to(&mut self, x: i32, y: i32) {
+        self.x = x;
+        self.y = y;
     }
 
     /// Get the next location to move to
-    fn next(&self) -> Point;
-
-    /// Go to the next location
-    fn go_next(&self) {
-        self.shift_to_point(self.next());
+    fn next(&self) -> Point {
+        // TODO
+        Point{x: self.x, y: self.y}
     }
+
 }
 
 impl Location for Player {
