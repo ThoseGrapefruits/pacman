@@ -13,7 +13,7 @@
 
 extern crate ncurses;
 
-use ncurses::WINDOW;
+use ncurses::{WINDOW, mvwprintw};
 use std::cmp::{Eq, PartialEq};
 
 /// Trait specifying a struct which exists in 2D space
@@ -147,7 +147,6 @@ impl Character for Ghost {
         // TODO
         Point::new(self.coords.x(), self.coords.y())
     }
-
 }
 
 impl Location for Ghost {
@@ -163,12 +162,12 @@ impl Location for Ghost {
 impl Visible for Ghost {
     fn draw(&self, window: WINDOW) {
         // TODO
+        mvwprintw(window, self.x(), self.y(), "👻");
     }
 }
 
 pub struct Player {
-    x: i32,
-    y: i32,
+    coords: Point,
 }
 
 unsafe impl Sync for Player {}
@@ -182,8 +181,7 @@ impl Player {
     /// Create a new player character at (x, y)
     fn new_at_coords(x: i32, y: i32) -> Player {
         Player {
-            x: x,
-            y: y,
+            coords: Point::new(x, y),
         }
     }
 }
@@ -212,31 +210,29 @@ impl Character for Player {
     // TODO rest of `Character` `fn`s
     /// Shift `self` by the given `dx` and `dy`
     fn shift(&mut self, dx: i32, dy: i32) {
-        self.x += dx;
-        self.y += dy;
+        self.coords.shift(dx, dy);
     }
 
     /// Shift `self` to (x, y)
     fn shift_to(&mut self, x: i32, y: i32) {
-        self.x = x;
-        self.y = y;
+        self.coords.shift_to(x, y);
     }
 
     /// Get the next location to move to
     fn next(&self) -> Point {
         // TODO
-        Point{x: self.x, y: self.y}
+        Point{x: self.x(), y: self.y()}
     }
 
 }
 
 impl Location for Player {
     fn x(&self) -> i32 {
-        self.x
+        self.coords.x()
     }
 
     fn y(&self) -> i32 {
-        self.y
+        self.coords.y()
     }
 }
 
@@ -244,5 +240,11 @@ impl Visible for Player {
 
     fn draw(&self, window: WINDOW) {
         // TODO
+        let ghost = String::from_utf8(vec![0xF0, 0x9F, 0x91, 0xBB]);
+        if ghost.is_err() {
+            let ghost = String::from("!");
+        }
+        // Print ghost emoji
+        mvwprintw(window, self.x(), self.y(), &ghost.unwrap());
     }
 }
