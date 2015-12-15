@@ -60,8 +60,24 @@ fn main() {
             KeyResponse::Quit => {
                 break
             }
-            KeyResponse::Move => {
+            KeyResponse::Move(direction) => {
+                match direction {
+                    Direction::Up => {
+                        // TODO
+                    }
 
+                    Direction::Down => {
+                        // TODO
+                    }
+
+                    Direction::Left => {
+                        // TODO
+                    }
+
+                    Direction::Right => {
+                        // TODO
+                    }
+                }
             }
             KeyResponse::Pause => {
 
@@ -115,9 +131,16 @@ fn get_max_bounds(window: WINDOW) -> (i32, i32) {
 
 enum KeyResponse {
     Quit,
-    Move,
+    Move(Direction),
     Pause,
     Void,
+}
+
+enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
 fn respond_to_key(ch: i32) -> KeyResponse {
@@ -126,22 +149,22 @@ fn respond_to_key(ch: i32) -> KeyResponse {
             // Player movement
             KEY_LEFT => {
                 // TODO
-                KeyResponse::Move
+                KeyResponse::Move(Direction::Left)
             },
 
             KEY_RIGHT => {
                 // TODO
-                KeyResponse::Move
+                KeyResponse::Move(Direction::Right)
             },
 
             KEY_UP => {
                 // TODO
-                KeyResponse::Move
+                KeyResponse::Move(Direction::Up)
             },
 
             KEY_DOWN => {
                 // TODO
-                KeyResponse::Move
+                KeyResponse::Move(Direction::Down)
             },
 
             ESC => {
