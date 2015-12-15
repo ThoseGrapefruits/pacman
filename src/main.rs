@@ -98,18 +98,22 @@ fn main() {
                 match direction {
                     Direction::Up => {
                         // TODO
+                        mvprintw(1, COLS - 1 - 25, "Move Up Rcvd");
                     }
 
                     Direction::Down => {
                         // TODO
+                        mvprintw(1, COLS - 1 - 25, "Move Down Rcvd");
                     }
 
                     Direction::Left => {
                         // TODO
+                        mvprintw(1, COLS - 1 - 25, "Move Left Rcvd");
                     }
 
                     Direction::Right => {
                         // TODO
+                        mvprintw(1, COLS - 1 - 25, "Move Right Rcvd");
                     }
                 }
             }
@@ -183,21 +187,25 @@ fn respond_to_key(ch: i32) -> KeyResponse {
             // Player movement
             KEY_LEFT => {
                 // TODO
+                mvprintw(0, COLS - 1 - 20, "Move Left Sent");
                 KeyResponse::Move(Direction::Left)
             },
 
             KEY_RIGHT => {
                 // TODO
+                mvprintw(0, COLS - 1 - 20, "Move Right Sent");
                 KeyResponse::Move(Direction::Right)
             },
 
             KEY_UP => {
                 // TODO
+                mvprintw(0, COLS - 1 - 20, "Move Up Sent");
                 KeyResponse::Move(Direction::Up)
             },
 
             KEY_DOWN => {
                 // TODO
+                mvprintw(0, COLS - 1 - 20, "Move Down Sent");
                 KeyResponse::Move(Direction::Down)
             },
 

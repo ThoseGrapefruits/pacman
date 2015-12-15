@@ -162,7 +162,14 @@ impl Location for Ghost {
 impl Visible for Ghost {
     fn draw(&self, window: WINDOW) {
         // TODO
-        mvwprintw(window, self.x(), self.y(), "👻");
+        let ghost = String::from_utf8(vec![0xF0, 0x9F, 0x91, 0xBB]);
+
+        // Print ghost emoji
+        if ghost.is_err() {
+            mvwprintw(window, self.x(), self.y(), "!");
+        } else {
+            mvwprintw(window, self.x(), self.y(), &ghost.unwrap());
+        }
     }
 }
 
@@ -240,11 +247,13 @@ impl Visible for Player {
 
     fn draw(&self, window: WINDOW) {
         // TODO
-        let ghost = String::from_utf8(vec![0xF0, 0x9F, 0x91, 0xBB]);
-        if ghost.is_err() {
-            let ghost = String::from("!");
-        }
+        let player = String::from_utf8(vec![0xF0, 0x9F, 0x91, 0xBB]);
+
         // Print ghost emoji
-        mvwprintw(window, self.x(), self.y(), &ghost.unwrap());
+        if player.is_err() {
+            mvwprintw(window, self.x(), self.y(), "0");
+        } else {
+            mvwprintw(window, self.x(), self.y(), &player.unwrap());
+        }
     }
 }
