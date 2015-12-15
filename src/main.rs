@@ -38,9 +38,15 @@ fn main() {
     });
 
     // Load `Player` and 4 `Ghost`s as `Character`s
-    let characters = vec!(&Player::new() as &Character,
-                          &Ghost::new(), &Ghost::new(),
-                          &Ghost::new(), &Ghost::new());
+    let player = Player::new();
+    let ghosts = vec!(Ghost::new(), Ghost::new(),
+                      Ghost::new(), Ghost::new());
+
+    let characters = vec!(&player as &Character,
+                          &ghosts[0], &ghosts[1],
+                          &ghosts[2], &ghosts[3]);
+
+
 
     let window = create_centred_window();
 
@@ -126,4 +132,3 @@ fn get_max_bounds(window: WINDOW) -> (i32, i32) {
 
     (max_y, max_x)
 }
-
