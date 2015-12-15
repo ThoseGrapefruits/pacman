@@ -15,8 +15,10 @@ mod character;
 extern crate ncurses;
 
 use ncurses::*;
-use std::{env, cmp};
-use character::{Character, Player, Ghost};
+use std::{env, cmp, thread};
+use character::{Player, Ghost};
+use std::sync::{Arc, Mutex};
+use std::sync::mpsc;
 
 static DESIRED_LINES: i32 = 20;
 static DESIRED_COLS: i32 = 32;
@@ -38,60 +40,38 @@ fn main() {
     });
 
     // Load `Player` and 4 `Ghost`s as `Character`s
-    let player = Player::new();
-    let ghosts = vec!(Ghost::new(), Ghost::new(),
-                      Ghost::new(), Ghost::new());
-
-    let characters = vec!(&player as &Character,
-                          &ghosts[0], &ghosts[1],
-                          &ghosts[2], &ghosts[3]);
-
-
+    let player = Arc::new(Mutex::new(Player::new()));
+    let ghosts = Arc::new(Mutex::new(vec!(Ghost::new(), Ghost::new(),
+                                          Ghost::new(), Ghost::new())));
 
     let window = create_centred_window();
 
-    let mut ch = getch();
+    let (tx, rx) = mpsc::channel::<KeyResponse>();
 
-    // Main user input loop
-    loop {
-        mvprintw(LINES - 1, 0, &format!("{}, {}", ch, keyname(ch)));
-        match ch {
-            // Player movement
-            KEY_LEFT => {
-                // TODO
-            },
 
-            KEY_RIGHT => {
-                // TODO
-            },
-
-            KEY_UP => {
-                // TODO
-            },
-
-            KEY_DOWN => {
-                // TODO
-            },
-
-            ESC => {
-                mvprintw(0, 0, "Found escape");
-            },
-
-            KEY_F4 => {
-                mvprintw(0, 0, "F4 Pressed");
-            },
-
-            CTRL_C => {
-                break
-            },
-
-            _ => {
-            },
+    thread::spawn(move || -> KeyResponse {
+        loop {
+            tx.send(respond_to_key(getch())).unwrap();
         }
-        refresh();
-        ch = getch();
-        clear();
+    });
+
+    loop {
+        match rx.recv().unwrap() {
+            KeyResponse::Quit => {
+                break
+            }
+            KeyResponse::Move => {
+
+            }
+            KeyResponse::Pause => {
+
+            }
+            KeyResponse::Void => {
+
+            }
+        }
     }
+
 
     // Stop `ncurses`
     destroy_window(window);
@@ -131,4 +111,55 @@ fn get_max_bounds(window: WINDOW) -> (i32, i32) {
     getmaxyx(window, &mut max_y, &mut max_x);
 
     (max_y, max_x)
+}
+
+enum KeyResponse {
+    Quit,
+    Move,
+    Pause,
+    Void,
+}
+
+fn respond_to_key(ch: i32) -> KeyResponse {
+        mvprintw(LINES - 1, 0, &format!("{}, {}", ch, keyname(ch)));
+        match ch {
+            // Player movement
+            KEY_LEFT => {
+                // TODO
+                KeyResponse::Move
+            },
+
+            KEY_RIGHT => {
+                // TODO
+                KeyResponse::Move
+            },
+
+            KEY_UP => {
+                // TODO
+                KeyResponse::Move
+            },
+
+            KEY_DOWN => {
+                // TODO
+                KeyResponse::Move
+            },
+
+            ESC => {
+                mvprintw(0, 0, "Found escape");
+                KeyResponse::Pause
+            },
+
+            KEY_F4 => {
+                mvprintw(0, 0, "F4 Pressed");
+                KeyResponse::Pause
+            },
+
+            CTRL_C => {
+                KeyResponse::Quit
+            },
+
+            _ => {
+                KeyResponse::Void
+            },
+        }
 }

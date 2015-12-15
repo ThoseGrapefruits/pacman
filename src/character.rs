@@ -108,9 +108,12 @@ pub trait Character : Visible {
     }
 }
 
+
 pub struct Ghost {
     coords: Point,
 }
+
+unsafe impl Sync for Ghost {}
 
 impl Ghost {
     /// Create a new `Ghost` at (0, 0)
@@ -167,6 +170,8 @@ pub struct Player {
     x: i32,
     y: i32,
 }
+
+unsafe impl Sync for Player {}
 
 impl Player {
     /// Create a new player character at (0, 0)
