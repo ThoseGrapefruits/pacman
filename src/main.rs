@@ -10,7 +10,10 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
+
 mod character;
+mod menu;
+mod game;
 
 extern crate ncurses;
 extern crate clap;
@@ -42,7 +45,6 @@ fn main() {
     let package = cargo_toml_parsed.get("package").expect("could not find [package]");
 
     let package_table = package.as_table().expect("not a table");
-    println!("{:?}", package_table);
     let name = package_table.get("name").expect("could not find name")
         .as_str().expect("name not a string");
     let version = package_table.get("version").expect("could not find version")
@@ -66,6 +68,9 @@ fn main() {
             .get_matches();
     let verbose = matches.occurrences_of("verbose");
 
+    // Start the game
+    let game = GameState::new();
+
     // Initialize `ncurses`
     initscr();
     raw();
@@ -74,10 +79,6 @@ fn main() {
     start_color();
     curs_set(CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
-    // Load `Player` and 4 `Ghost`s as `Character`s
-    let player = Arc::new(Mutex::new(Player::new()));
-    let ghosts = Arc::new(Mutex::new(vec!(Ghost::new(), Ghost::new(),
-                                          Ghost::new(), Ghost::new())));
     let window = create_centred_window();
 
     let (tx, rx) = mpsc::channel::<KeyResponse>();
@@ -85,11 +86,45 @@ fn main() {
 
     thread::spawn(move || -> KeyResponse {
         loop {
-            tx.send(respond_to_key(getch())).unwrap();
+            let response = respond_to_key(getch());
+
+            let mut player = game.get_player().lock().unwrap();
+
+            match response {
+                KeyResponse::Quit => {
+                    break
+                },
+                KeyResponse::Pause => {
+
+                },
+                KeyResponse::Move(ref dir) => {
+                    match *dir {
+                        Direction::Down => {
+                            // TODO
+                        },
+                        Direction::Up => {
+                            // TODO
+                        },
+                        Direction::Left => {
+                            // TODO
+                        },
+                        Direction::Right => {
+                            // TODO
+                        }
+                    }
+                },
+                KeyResponse::Void => {
+
+                },
+            }
+
+            tx.send(response).unwrap();
         }
     });
 
     loop {
+        wclear(window);
+        box_(window, 0, 0);
         match rx.recv().unwrap() {
             KeyResponse::Quit => {
                 break
@@ -117,7 +152,7 @@ fn main() {
                     }
                 }
             }
-            KeyResponse::Pause => {
+            KeyResponse::Escape => {
 
             }
             KeyResponse::Void => {
@@ -170,8 +205,9 @@ fn get_max_bounds(window: WINDOW) -> (i32, i32) {
 enum KeyResponse {
     Quit,
     Move(Direction),
-    Pause,
+    Escape,
     Void,
+    Select,
 }
 
 enum Direction {

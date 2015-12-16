@@ -77,7 +77,7 @@ impl Location for Point {
 }
 
 /// Trait to be implemented for all structs to be rendered in `ncurses`
-pub trait Visible : Location {
+pub trait Visible {
 
     /// Draw `self` on the given `window`
     fn draw(&self, window: WINDOW);
