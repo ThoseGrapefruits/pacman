@@ -10,8 +10,11 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
+extern crate ncurses;
 
 use std::error::Error;
+use ncurses::{wgetch, WINDOW};
+
 
 enum MenuObject {
     String,
@@ -21,6 +24,85 @@ enum MenuObject {
 }
 
 impl MenuObject {
+    /// Opens selection and grabs user input until a selection has been made
+    fn open_selection(&self, window: ncurses::WINDOW) {
+        loop {
+            let input = ncurses::wgetch(window);
+            match input {
+                // TODO
+            }
+        }
+    }
+}
+
+pub struct MainMenu {
+    index: u8,
+    title: String,
+    items: Vec<MenuObject>,
+}
+
+impl MainMenu {
+    fn new_with_title_and_items(title: &str, items: Vec<MenuObject>) -> MainMenu {
+        MainMenu {
+            index: 0,
+            title: String::from(title),
+            items: items,
+        }
+    }
+
+    /// Get the parent menu of this menu
+    fn get_parent(&self) -> MenuObject {
+        // TODO
+    }
+
+    /// Move the cursor up one item
+    fn cursor_up(&self) {
+        // TODO
+    }
+
+    /// Move the cursor down one item
+    fn cursor_down(&self) {
+        // TODO
+    }
+
+    /// Select the current item, returning the `MenuObject`
+    fn select(&self) -> MenuObject {
+        // TODO
+    }
+}
+
+pub struct PauseMenu {
+    delegate: MainMenu,
+}
+
+impl PauseMenu {
+
+    /// Get the parent menu of this menu
+    fn get_parent(&self) -> MenuObject {
+        // TODO
+    }
+
+    /// Move the cursor up one item
+    fn cursor_up(&self) {
+        // TODO
+    }
+
+    /// Move the cursor down one item
+    fn cursor_down(&self) {
+        // TODO
+    }
+
+    /// Select the current item, returning the `MenuObject`
+    fn select(&self) -> MenuObject {
+        // TODO
+    }
+}
+
+pub struct SubMenu {
+    delegate: MainMenu,
+}
+
+impl SubMenu {
     /// Get the parent menu of this menu
     fn get_parent(&self) -> MenuObject {
 
@@ -40,38 +122,6 @@ impl MenuObject {
     fn select(&self) -> MenuObject {
 
     }
-
-    /// Opens selection and grabs user input until a selection has been made
-    fn open_selection(&self, window: WINDOW) {
-        loop {
-            let input = wgetch();
-            match input {}
-        }
-    }
-}
-
-pub struct MainMenu {
-    index: u8,
-    title: &str,
-    items: Vec<MenuObject>,
-}
-
-impl MainMenu {
-    fn new_with_title_and_items(title: &str, items: Vec<MenuObject>) -> MainMenu {
-        MainMenu {
-            index: 0,
-            title: title,
-            items: items,
-        }
-    }
-}
-
-pub struct PauseMenu {
-    delegate: MainMenu,
-}
-
-pub struct SubMenu {
-    delegate: MainMenu,
 }
 
 /// Builder for `Menu`s
@@ -82,17 +132,19 @@ pub struct MenuBuilder {
     kind: MenuObject,
 }
 
-pub impl MenuBuilder {
-    fn new() -> Result<MenuBuilder, Error> {
+impl <'a> MenuBuilder {
+    /// Create a new `MenuBuilder` to build a `MainMenu`
+    pub fn new() -> Result<MenuBuilder> {
         MenuBuilder::new_of_kind(MenuObject::MainMenu)
     }
 
-    fn new_of_kind(kind: MenuObject) -> Result<MenuBuilder, Error> {
+    /// Create a new `MenuBuilder` to build a `MenuObject` of the designated kind
+    pub fn new_of_kind(kind: MenuObject) -> Result<MenuBuilder, Error> {
         match kind {
             MenuObject::MainMenu | MenuObject::PauseMenu | MenuObject::SubMenu => {
                 Ok(MenuBuilder {
                     index: 0_u8,
-                    title: "",
+                    title: String::new(),
                     items: Vec::new(),
                     kind: kind,
                 })
@@ -102,4 +154,6 @@ pub impl MenuBuilder {
             }
         }
     }
+
+    // TODO rest of MenuBuilder functions
 }

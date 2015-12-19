@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-mod character;
+mod game_objects;
 mod menu;
 mod game;
 
@@ -19,15 +19,15 @@ extern crate ncurses;
 extern crate clap;
 extern crate toml;
 
-use ncurses::*;
 use std::{env, cmp, thread};
-use character::{Player, Ghost};
+use game_objects::{Player, Ghost};
 use std::sync::{Arc, Mutex};
 use std::sync::mpsc;
 use clap::{App, Arg};
 use std::io::prelude::*;
 use std::fs::File;
 use toml::{Parser};
+use game::GameState;
 
 static DESIRED_LINES: i32 = 20;
 static DESIRED_COLS: i32 = 32;
@@ -71,13 +71,15 @@ fn main() {
     // Start the game
     let game = GameState::new();
 
+    // TODO
+
     // Initialize `ncurses`
-    initscr();
-    raw();
-    keypad(stdscr, true);
-    noecho();
-    start_color();
-    curs_set(CURSOR_VISIBILITY::CURSOR_INVISIBLE);
+    ncurses::initscr();
+    ncurses::raw();
+    ncurses::keypad(ncurses::stdscr, true);
+    ncurses::noecho();
+    ncurses::start_color();
+    ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
     let window = create_centred_window();
 
@@ -86,7 +88,7 @@ fn main() {
 
     thread::spawn(move || -> KeyResponse {
         loop {
-            let response = respond_to_key(getch());
+            let response = respond_to_key(ncurses::getch());
 
             let mut player = game.get_player().lock().unwrap();
 
@@ -123,8 +125,8 @@ fn main() {
     });
 
     loop {
-        wclear(window);
-        box_(window, 0, 0);
+        ncurses::wclear(window);
+        ncurses::box_(window, 0, 0);
         match rx.recv().unwrap() {
             KeyResponse::Quit => {
                 break
@@ -133,22 +135,22 @@ fn main() {
                 match direction {
                     Direction::Up => {
                         // TODO
-                        mvprintw(1, COLS - 1 - 25, "Move Up Rcvd");
+                        ncurses::mvprintw(1, ncurses::COLS - 1 - 25, "Move Up Rcvd");
                     }
 
                     Direction::Down => {
                         // TODO
-                        mvprintw(1, COLS - 1 - 25, "Move Down Rcvd");
+                        ncurses::mvprintw(1, ncurses::COLS - 1 - 25, "Move Down Rcvd");
                     }
 
                     Direction::Left => {
                         // TODO
-                        mvprintw(1, COLS - 1 - 25, "Move Left Rcvd");
+                        ncurses::mvprintw(1, ncurses::COLS - 1 - 25, "Move Left Rcvd");
                     }
 
                     Direction::Right => {
                         // TODO
-                        mvprintw(1, COLS - 1 - 25, "Move Right Rcvd");
+                        ncurses::mvprintw(1, ncurses::COLS - 1 - 25, "Move Right Rcvd");
                     }
                 }
             }
@@ -164,21 +166,21 @@ fn main() {
 
     // Stop `ncurses`
     destroy_window(window);
-    endwin();
+    ncurses::endwin();
 }
 
 /// Open a new, boxed ncurses window
 fn create_window(y: i32, x: i32,
-                 lines: i32, cols: i32) -> WINDOW {
-    let window = newwin(lines, cols, y, x);
-    box_(window, 0, 0);
-    wrefresh(window);
+                 lines: i32, cols: i32) -> ncurses::WINDOW {
+    let window = ncurses::newwin(lines, cols, y, x);
+    ncurses::box_(window, 0, 0);
+    ncurses::wrefresh(window);
 
     window
 }
 
-fn create_centred_window() -> WINDOW {
-    let (max_lines, max_cols) = get_max_bounds(stdscr);
+fn create_centred_window() -> ncurses::WINDOW {
+    let (max_lines, max_cols) = get_max_bounds(ncurses::stdscr);
     let lines: i32 = cmp::min(DESIRED_LINES, max_lines);
     let cols: i32 = cmp::min(DESIRED_COLS, max_cols);
 
@@ -187,17 +189,17 @@ fn create_centred_window() -> WINDOW {
 }
 
 /// Destroy an ncurses window
-fn destroy_window(window: WINDOW) {
-    let ch = ' ' as chtype;
-    wborder(window, ch, ch, ch, ch, ch, ch, ch, ch);
-    wrefresh(window);
-    delwin(window);
+fn destroy_window(window: ncurses::WINDOW) {
+    let ch = ' ' as ncurses::chtype;
+    ncurses::wborder(window, ch, ch, ch, ch, ch, ch, ch, ch);
+    ncurses::wrefresh(window);
+    ncurses::delwin(window);
 }
 
 /// Get the maximum bounds of the console
-fn get_max_bounds(window: WINDOW) -> (i32, i32) {
+fn get_max_bounds(window: ncurses::WINDOW) -> (i32, i32) {
     let (mut max_y, mut max_x) = (0, 0);
-    getmaxyx(window, &mut max_y, &mut max_x);
+    ncurses::getmaxyx(window, &mut max_y, &mut max_x);
 
     (max_y, max_x)
 }
@@ -218,40 +220,40 @@ enum Direction {
 }
 
 fn respond_to_key(ch: i32) -> KeyResponse {
-        mvprintw(LINES - 1, 0, &format!("{}, {}", ch, keyname(ch)));
+        ncurses::mvprintw(ncurses::LINES - 1, 0, &format!("{}, {}", ch, ncurses::keyname(ch)));
         match ch {
             // Player movement
             KEY_LEFT => {
                 // TODO
-                mvprintw(0, COLS - 1 - 20, "Move Left Sent");
+                ncurses::mvprintw(0, ncurses::COLS - 1 - 20, "Move Left Sent");
                 KeyResponse::Move(Direction::Left)
             },
 
             KEY_RIGHT => {
                 // TODO
-                mvprintw(0, COLS - 1 - 20, "Move Right Sent");
+                ncurses::mvprintw(0, ncurses::COLS - 1 - 20, "Move Right Sent");
                 KeyResponse::Move(Direction::Right)
             },
 
             KEY_UP => {
                 // TODO
-                mvprintw(0, COLS - 1 - 20, "Move Up Sent");
+                ncurses::mvprintw(0, ncurses::COLS - 1 - 20, "Move Up Sent");
                 KeyResponse::Move(Direction::Up)
             },
 
             KEY_DOWN => {
                 // TODO
-                mvprintw(0, COLS - 1 - 20, "Move Down Sent");
+                ncurses::mvprintw(0, ncurses::COLS - 1 - 20, "Move Down Sent");
                 KeyResponse::Move(Direction::Down)
             },
 
             ESC => {
-                mvprintw(0, 0, "Found escape");
+                ncurses::mvprintw(0, 0, "Found escape");
                 KeyResponse::Pause
             },
 
             KEY_F4 => {
-                mvprintw(0, 0, "F4 Pressed");
+                ncurses::mvprintw(0, 0, "F4 Pressed");
                 KeyResponse::Pause
             },
 
