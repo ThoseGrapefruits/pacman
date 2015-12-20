@@ -109,30 +109,42 @@ pub trait Character : Visible {
 
 pub struct Coin {
     coords: Point,
+    big: bool,
 }
 
 impl Coin {
     pub fn new() -> Coin {
-        Coin::new_at_coords(0, 0)
+        Coin::new_at_coords(0, 0, false)
     }
 
-    pub fn new_at_coords(x: i32, y: i32) -> Coin {
+    pub fn new_at_coords(x: i32, y: i32, big: bool) -> Coin {
         Coin {
             coords: Point::new(x, y),
+            big: big,
         }
     }
 
-    pub fn new_from_point(coords: Point) -> Coin {
+    pub fn new_at_point(coords: Point, big: bool) -> Coin {
         Coin {
             coords: coords,
+            big: big,
         }
+    }
+
+    /// Check if the given `Coin` is big (gives more points if so)
+    pub fn is_big(&self) -> bool {
+        self.big
     }
 }
 
 
 impl Visible for Coin {
     fn draw(&self, window: WINDOW) {
-        // TODO
+        if self.is_big() {
+            try_draw_utf8(window, vec![0xE2, 0x97, 0x89], self.x(), self.y());
+        } else {
+            try_draw_utf8(window, vec![0xE2, 0x97, 0x8F], self.x(), self.y());
+        }
     }
 }
 
@@ -201,15 +213,18 @@ impl Location for Ghost {
 impl Visible for Ghost {
     /// Draw the ghost emoji at this `Ghost`'s coordinates
     fn draw(&self, window: WINDOW) {
-        // TODO
-        let ghost = String::from_utf8(vec![0xF0, 0x9F, 0x91, 0xBB]);
+        try_draw_utf8(window, vec![0xF0, 0x9F, 0x91, 0xBB], self.x(), self.y());
+    }
+}
 
-        // Print ghost emoji
-        if ghost.is_err() {
-            mvwprintw(window, self.x(), self.y(), "!");
-        } else {
-            mvwprintw(window, self.x(), self.y(), &ghost.unwrap());
-        }
+pub fn try_draw_utf8(window: WINDOW, vec: Vec<u8>, x: i32, y: i32) {
+    let to_draw = String::from_utf8(vec![0xF0, 0x9F, 0x91, 0xBB]);
+
+    // Print ghost emoji
+    if to_draw.is_err() {
+        mvwprintw(window, x, y, "!");
+    } else {
+        mvwprintw(window, x, y, &to_draw.unwrap());
     }
 }
 
@@ -285,14 +300,6 @@ impl Location for Player {
 
 impl Visible for Player {
     fn draw(&self, window: WINDOW) {
-        // TODO
-        let player = String::from_utf8(vec![0xF0, 0x9F, 0x91, 0xBB]);
-
-        // Print ghost emoji
-        if player.is_err() {
-            mvwprintw(window, self.x(), self.y(), "0");
-        } else {
-            mvwprintw(window, self.x(), self.y(), &player.unwrap());
-        }
+        try_draw_utf8(window, vec![0xF0, 0x9F, 0x91, 0xBB], self.x(), self.y());
     }
 }

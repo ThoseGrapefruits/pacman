@@ -13,9 +13,10 @@
 
 use game_objects::{Player, Ghost, Coin};
 use menu::{MenuBuilder, MenuObject};
+use std::sync::{Arc, Mutex};
 
 pub struct GameState {
-    player: Player,
+    player: Arc<Mutex<Player>>,
     ghosts: Vec<Ghost>,
     coins: Vec<Coin>,
     paused: bool,
@@ -26,7 +27,7 @@ impl GameState {
     /// Create a new GameState with the default map layout
     fn new() -> GameState {
         GameState {
-            player: Player::new(),
+            player: Arc::new(Mutex::new(Player::new())),
             ghosts: vec![Ghost::new(), Ghost::new(), Ghost::new(), Ghost::new()],
             coins: vec![Coin::new()], // TODO add rest of default coin positions
             paused: false,
@@ -39,8 +40,8 @@ impl GameState {
         // TODO
     }
 
-    fn get_player(&self) -> &Player {
-        &self.player
+    fn get_player(&self) -> Arc<Mutex<Player>> {
+        self.player
     }
 
     // TODO rest of GameState functionality

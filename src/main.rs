@@ -86,7 +86,7 @@ fn main() {
     let (tx, rx) = mpsc::channel::<KeyResponse>();
 
 
-    thread::spawn(move || -> KeyResponse {
+    thread::spawn(move || {
         loop {
             let response = respond_to_key(ncurses::getch());
 
@@ -210,6 +210,7 @@ enum KeyResponse {
     Escape,
     Void,
     Select,
+    Pause,
 }
 
 enum Direction {

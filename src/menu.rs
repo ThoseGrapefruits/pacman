@@ -39,6 +39,7 @@ pub struct MainMenu {
     index: u8,
     title: String,
     items: Vec<MenuObject>,
+    parent: Option<MenuObject>,
 }
 
 impl MainMenu {
@@ -47,12 +48,13 @@ impl MainMenu {
             index: 0,
             title: String::from(title),
             items: items,
+            parent: None,
         }
     }
 
     /// Get the parent menu of this menu
-    fn get_parent(&self) -> MenuObject {
-        // TODO
+    fn get_parent(&self) -> Option<MenuObject> {
+        self.parent
     }
 
     /// Move the cursor up one item
@@ -78,23 +80,23 @@ pub struct PauseMenu {
 impl PauseMenu {
 
     /// Get the parent menu of this menu
-    fn get_parent(&self) -> MenuObject {
-        // TODO
+    fn get_parent(&self) -> Option<MenuObject> {
+        self.delegate.get_parent()
     }
 
     /// Move the cursor up one item
     fn cursor_up(&self) {
-        // TODO
+        self.delegate.cursor_up()
     }
 
     /// Move the cursor down one item
     fn cursor_down(&self) {
-        // TODO
+        self.delegate.cursor_down()
     }
 
     /// Select the current item, returning the `MenuObject`
     fn select(&self) -> MenuObject {
-        // TODO
+        self.delegate.select()
     }
 }
 
@@ -104,56 +106,70 @@ pub struct SubMenu {
 
 impl SubMenu {
     /// Get the parent menu of this menu
-    fn get_parent(&self) -> MenuObject {
-
+    fn get_parent(&self) -> Option<MenuObject> {
+        self.delegate.get_parent()
     }
 
     /// Move the cursor up one item
     fn cursor_up(&self) {
-
+        self.delegate.cursor_up()
     }
 
     /// Move the cursor down one item
     fn cursor_down(&self) {
-
+        self.delegate.cursor_down()
     }
 
     /// Select the current item, returning the `MenuObject`
     fn select(&self) -> MenuObject {
-
+        self.delegate.select()
     }
 }
 
 /// Builder for `Menu`s
-pub struct MenuBuilder {
+pub struct MenuBuilder<'a> {
     index: u8,
-    title: String,
+    title: &'a str,
     items: Vec<MenuObject>,
     kind: MenuObject,
 }
 
-impl <'a> MenuBuilder {
+impl <'a> MenuBuilder<'a> {
     /// Create a new `MenuBuilder` to build a `MainMenu`
-    pub fn new() -> Result<MenuBuilder> {
+    pub fn new() -> Result<MenuBuilder<'a>, &'a str> {
         MenuBuilder::new_of_kind(MenuObject::MainMenu)
     }
 
     /// Create a new `MenuBuilder` to build a `MenuObject` of the designated kind
-    pub fn new_of_kind(kind: MenuObject) -> Result<MenuBuilder, Error> {
+    pub fn new_of_kind(kind: MenuObject) -> Result<MenuBuilder<'a>, &'a str> {
         match kind {
             MenuObject::MainMenu | MenuObject::PauseMenu | MenuObject::SubMenu => {
                 Ok(MenuBuilder {
                     index: 0_u8,
-                    title: String::new(),
+                    title: "",
                     items: Vec::new(),
                     kind: kind,
                 })
             },
             MenuObject::String => {
-                Err("Cannot use MenuBuilder to build String");
+                Err("Cannot use MenuBuilder to build String")
             }
         }
     }
 
-    // TODO rest of MenuBuilder functions
+    fn index(&self, index: u8) {
+        self.index = index;
+    }
+
+    fn title(&self, title: &'a str) {
+        self.title = title;
+    }
+
+    fn items(&self, items: Vec<MenuObject>) {
+        self.items = items;
+    }
+
+    fn kind(&self, kind: MenuObject) {
+        self.kind = kind;
+    }
 }
