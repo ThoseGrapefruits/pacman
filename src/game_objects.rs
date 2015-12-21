@@ -198,6 +198,10 @@ impl Character for Ghost {
         // TODO
         Point::new(self.coords.x(), self.coords.y())
     }
+
+    pub fn go_next(&mut self) {
+        // TODO
+    }
 }
 
 impl Location for Ghost {
@@ -286,6 +290,9 @@ impl Character for Player {
         Point{x: self.x(), y: self.y()}
     }
 
+    pub fn go_next(&mut self) {
+        // TODO
+    }
 }
 
 impl Location for Player {

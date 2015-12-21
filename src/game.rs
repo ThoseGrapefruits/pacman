@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-use game_objects::{Player, Ghost, Coin};
+use game_objects::{Player, Ghost, Coin, Visible, Character, Location};
 use menu::{MenuBuilder, MenuObject};
 use std::sync::{Arc, Mutex};
 
@@ -36,8 +36,25 @@ impl GameState {
     }
 
     /// Get the next state of the game
-    fn next(&self) {
-        // TODO
+    fn next(&self) -> GameState {
+        let player = self.player.lock().unwrap();
+
+        // Move `Ghost`s forward to next step
+        for ghost in self.ghosts {
+            ghost.go_next();
+        }
+
+        // Move `Player` forward to next step
+        player.go_next();
+
+        for coin in self.coins {
+            if coin.x() == player.x() && coin.y() == player.y() {
+
+            }
+        }
+        // TODO rest of per-tick game updates
+
+        *self
     }
 
     fn get_player(&self) -> Arc<Mutex<Player>> {

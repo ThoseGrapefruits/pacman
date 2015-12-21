@@ -21,6 +21,7 @@ enum MenuObject {
     SubMenu,
     MainMenu,
     PauseMenu,
+    Fn
 }
 
 impl MenuObject {
@@ -36,10 +37,9 @@ impl MenuObject {
 }
 
 pub struct MainMenu {
-    index: u8,
+    index: usize,
     title: String,
     items: Vec<MenuObject>,
-    parent: Option<MenuObject>,
 }
 
 impl MainMenu {
@@ -48,50 +48,58 @@ impl MainMenu {
             index: 0,
             title: String::from(title),
             items: items,
-            parent: None,
         }
     }
 
     /// Get the parent menu of this menu
     fn get_parent(&self) -> Option<MenuObject> {
-        self.parent
+        None
     }
 
     /// Move the cursor up one item
     fn cursor_up(&self) {
-        // TODO
+        if self.index == 0 {
+            self.index = self.items.len();
+        } else {
+            self.index -= 1;
+        }
     }
 
     /// Move the cursor down one item
     fn cursor_down(&self) {
-        // TODO
+        if self.index == self.items.len() - 1 {
+            self.index = 0;
+        } else {
+            self.index += 1;
+        }
     }
 
     /// Select the current item, returning the `MenuObject`
     fn select(&self) -> MenuObject {
-        // TODO
+        self.items[self.index]
     }
 }
 
 pub struct PauseMenu {
     delegate: MainMenu,
+    parent: MenuObject,
 }
 
 impl PauseMenu {
 
     /// Get the parent menu of this menu
     fn get_parent(&self) -> Option<MenuObject> {
-        self.delegate.get_parent()
+        Some(self.parent)
     }
 
     /// Move the cursor up one item
     fn cursor_up(&self) {
-        self.delegate.cursor_up()
+        self.delegate.cursor_up();
     }
 
     /// Move the cursor down one item
     fn cursor_down(&self) {
-        self.delegate.cursor_down()
+        self.delegate.cursor_down();
     }
 
     /// Select the current item, returning the `MenuObject`
@@ -102,12 +110,13 @@ impl PauseMenu {
 
 pub struct SubMenu {
     delegate: MainMenu,
+    parent: MenuObject,
 }
 
 impl SubMenu {
     /// Get the parent menu of this menu
     fn get_parent(&self) -> Option<MenuObject> {
-        self.delegate.get_parent()
+        Some(self.parent)
     }
 
     /// Move the cursor up one item
@@ -128,7 +137,7 @@ impl SubMenu {
 
 /// Builder for `Menu`s
 pub struct MenuBuilder<'a> {
-    index: u8,
+    index: usize,
     title: &'a str,
     items: Vec<MenuObject>,
     kind: MenuObject,
@@ -145,7 +154,7 @@ impl <'a> MenuBuilder<'a> {
         match kind {
             MenuObject::MainMenu | MenuObject::PauseMenu | MenuObject::SubMenu => {
                 Ok(MenuBuilder {
-                    index: 0_u8,
+                    index: 0,
                     title: "",
                     items: Vec::new(),
                     kind: kind,
@@ -157,7 +166,7 @@ impl <'a> MenuBuilder<'a> {
         }
     }
 
-    fn index(&self, index: u8) {
+    fn index(&self, index: usize) {
         self.index = index;
     }
 
